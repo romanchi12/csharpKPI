@@ -1,10 +1,8 @@
 ﻿using System;
 
+// variant 2-16
 namespace lab2
 {
-	// 25.11.2017 0:51
-	//Variant 2-16
-	//First part (pages 23-24)
 	enum Category
 	{
 		DRAMA,
@@ -34,7 +32,10 @@ namespace lab2
 				this.name = value;
 			}
 		}
-
+		public override string ToString()
+		{
+			return string.Format("[Trupa: nameProperty={0}]", nameProperty);
+		}
 	}
 	class Building
 	{
@@ -72,7 +73,46 @@ namespace lab2
 				orkestrPrice = value;
 			}
 		}
-			
+		public override string ToString()
+		{
+			return string.Format("[Building: nameProperty={0}, orkestrPriceProperty={1}]", nameProperty,
+			                     orkestrPriceProperty);
+		}
+		public static bool operator < (Building building1, Building building2)
+		{
+			return building1.placeAmount < building2.placeAmount;
+		}
+		public static bool operator > (Building building1, Building building2)
+		{
+			return building1.placeAmount > building2.placeAmount;
+		}
+		public override bool Equals(Object obj)
+		{
+			return base.Equals(obj);
+		}
+		public static bool operator == (Building building1, Building building2)
+		{
+			if (building1.name.Equals(building2.name) && building1.adress.Equals(building2.adress)
+			    && building1.orendFee == building2.orendFee && building1.placeAmount == building2.placeAmount)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		public static bool operator !=(Building building1, Building building2)
+		{
+			if (!building1.name.Equals(building2.name) && building1.adress.Equals(building2.adress)
+			   && building1.orendFee == building2.orendFee && building1.placeAmount == building2.placeAmount)
+			{
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
 	}
 	class Performance
 	{
@@ -113,12 +153,27 @@ namespace lab2
 				isOrkesterNeeded = value;
 			}
 		}
+		public override string ToString()
+		{
+			return string.Format("[Performance: nameProperty={0}, isOrkesterNeededProperty={1}]", nameProperty, isOrkesterNeededProperty);
+		}
 	}
-	class Repertuar
+	class Repertuar:ICloneable
 	{
 		private String month;
 		private int performancesAmount;
 		private Performance[] performances;
+		public Performance this[int index]
+		{
+			get
+			{
+				return this.performances[index];
+			}
+			set
+			{
+				this.performances[index] = value;
+			}
+		}
 		public String monthProperty
 		{
 			get
@@ -158,9 +213,70 @@ namespace lab2
 		public void info()
 		{
 			Console.WriteLine("Repertuars " + month + " " + this.performancesAmount);
+			for (int i = 0; i < this.performances.Length; i++)
+			{
+				Console.WriteLine(this.performances[i].nameProperty);
+			}
 		}
-
+		public Repertuar(Repertuar repertuar)
+		{
+			Console.WriteLine("Copy constr");
+			this.monthProperty = repertuar.monthProperty;
+			this.performances = repertuar.performances;
+			this.performancesAmount = repertuar.performancesAmount;
+		}
+		public object Clone()
+		{
+			Console.WriteLine("Clone repertuar");
+			Repertuar repertuar = new Repertuar(this.month, this.performancesAmount, this.performances);
+			return repertuar;
+		}
+		~Repertuar()
+		{
+			Console.WriteLine(this.monthProperty + " has been deleted");
+		}
+		public override string ToString()
+		{
+			return string.Format("[Repertuar: monthProperty={0}]", monthProperty);
+		}
 	}
+
+
+	//demonstrating virtual and non-virtual functions
+	 /*Compilation error
+	  method from DerrivedNonVirtual hides method from BaseNonVirtual*/
+	 
+	  class BaseNonVirtual
+	{
+		public void method()
+		{
+			Console.WriteLine("BaseNonVirtual");
+		}
+	}
+	class DerrivedNonVirtual:BaseNonVirtual
+	{
+		public new void method()
+		{
+			Console.WriteLine("DerrivedNonVirtual");
+		}
+	}
+
+	class BaseVirtual
+	{
+		public virtual void method()
+		{
+			Console.WriteLine("BaseVirtual");
+		}
+	}
+	class DerrivedVirtual:BaseVirtual
+	{
+		public override void method()
+		{
+			Console.WriteLine("DerrivedVirtual");
+		}
+	}
+
+
 
 	class MainClass
 	{
@@ -170,9 +286,34 @@ namespace lab2
 			Building building1 = new Building("Building1", "Adress1", 400.0, 50);
 			Performance performance1 = new Performance("Performance1", Category.OPERA, building1, trupa1, System.DateTime.Now, false);
 			Performance performance2 = new Performance("Performance2", Category.DRAMA, building1, trupa1, System.DateTime.Now, true);
-			Performance[] performances = { performance1, performance2 };
-			Repertuar repertuar = new Repertuar("may", 2, performances);
-			repertuar.info();
+			Performance performance3 = new Performance("Performance3", Category.OPERA, building1, trupa1, System.DateTime.Now, false);
+			Performance[] performances1 = { performance1, performance2 };
+			Performance[] performances2 = { performance1, performance3 };
+			Repertuar repertuar1 = new Repertuar("may", 2, performances1);
+			Repertuar repertuar2 = new Repertuar("june", 2, performances2);
+			repertuar1.info();
+			repertuar2.info();
+			Repertuar repertuar3 = (Repertuar)repertuar2.Clone();
+			Console.WriteLine(repertuar1);
+			Console.WriteLine(repertuar1[0]);
+
+
+
+			BaseNonVirtual baseNonVirtual = new BaseNonVirtual();
+			DerrivedNonVirtual derrivedNonVirtual = new DerrivedNonVirtual();
+			BaseNonVirtual baseNonVirtualHref = null;
+			baseNonVirtualHref = baseNonVirtual;
+			baseNonVirtualHref.method();              // output: BaseNonVirtual
+			baseNonVirtualHref = derrivedNonVirtual;
+			baseNonVirtualHref.method();              // output: BaseNonVirtual
+
+			BaseVirtual baseVirtual = new BaseVirtual();
+			DerrivedVirtual derrivedVirtual = new DerrivedVirtual();
+			BaseVirtual baseVirtualHref = null;
+			baseVirtualHref = baseVirtual;
+			baseVirtualHref.method();				  // output: BaseVirtual
+			baseVirtualHref = derrivedVirtual;
+			baseVirtualHref.method();				  // output: DerrivedVirtual
 		}
 	}
 }
